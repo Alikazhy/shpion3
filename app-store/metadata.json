@@ -1,0 +1,37 @@
+{
+  "appName": "Шпион",
+  "subtitle": "Найди шпиона среди друзей",
+  "bundleId": "com.shpion.game",
+  "version": "2.0.0",
+  "buildNumber": "1",
+  "primaryCategory": "Games",
+  "secondaryCategory": "Entertainment",
+  "ageRating": "4+",
+  "price": "Free",
+  "languages": ["ru", "en"],
+  "keywords": [
+    "шпион", "spyfall", "настольная игра", "вечеринка", "компания",
+    "детектив", "слова", "party game", "mafia", "угадайка"
+  ],
+  "description": {
+    "short": "Весёлая игра для компании: найди шпиона, который не знает загаданное слово!",
+    "full": "Шпион — это современная цифровая версия популярной настольной игры для вечеринок и дружеских встреч.\n\nОдин или несколько игроков получают роль шпиона и не знают секретное слово. Остальные игроки знают слово, но не знают, кто шпион. По очереди называйте намёки, слушайте ответы, голосуйте — и поймайте шпиона!\n\nОСОБЕННОСТИ:\n• 19+ тематических категорий с сотнями слов\n• Настройка числа игроков и шпионов\n• Таймер обсуждения\n• Свои слова и подсказки\n• Статистика игр\n• Работает офлайн\n• Красивый интерфейс в стиле iOS\n\nИдеально для вечеринок, поездок и семейных встреч. Не требует интернета после установки."
+  },
+  "privacyPolicyUrl": "https://your-domain.com/privacy.html",
+  "supportUrl": "mailto:support@shpion-game.app",
+  "marketingUrl": "https://your-domain.com",
+  "screenshots": {
+    "iphone67": ["screenshots/menu.png", "screenshots/settings.png", "screenshots/role.png", "screenshots/game.png"],
+    "iphone65": ["screenshots/menu.png", "screenshots/settings.png", "screenshots/role.png", "screenshots/game.png"],
+    "ipad": ["screenshots/ipad-menu.png", "screenshots/ipad-game.png"]
+  },
+  "reviewNotes": "Party word game. No login, no network required after install. All data stored locally on device.",
+  "capacitor": {
+    "setup": [
+      "npm init -y && npm install @capacitor/core @capacitor/cli @capacitor/ios",
+      "npx cap init 'Шпион' com.shpion.game --web-dir .",
+      "npx cap add ios",
+      "npx cap copy ios && npx cap open ios"
+    ]
+  }
+}
