@@ -300,42 +300,13 @@ const App = {
         to   { transform: scale(1) rotate(0deg);   opacity: 1; }
       }
 
-      /* ── Экран передачи устройства ── */
-      #phase-pass {
-        display: flex; flex-direction: column; align-items: center;
-        gap: 0; text-align: center;
-      }
-      .pass-device-visual {
-        width: 64px; height: 64px; margin: 0 auto 16px;
-        background: var(--color-spy-dim);
-        border-radius: 50%;
-        display: flex; align-items: center; justify-content: center;
-        animation: passIconPulse 2s ease-in-out infinite;
-      }
-      @keyframes passIconPulse {
-        0%,100% { box-shadow: 0 0 0 0 var(--color-spy-dim); }
-        50% { box-shadow: 0 0 0 14px transparent; }
-      }
-      .pass-title {
-        font-size: 20px; font-weight: 700;
-        color: var(--color-text);
-        margin: 0 0 8px;
-        line-height: 1.3;
-      }
-      .pass-subtitle {
-        font-size: 14px; color: var(--color-text-dim);
-        margin: 0 0 4px;
+      /* ── Экран передачи устройства — стиль для .pass-text ── */
+      .pass-text {
+        font-size: 15px;
+        color: var(--color-text-dim);
+        text-align: center;
         line-height: 1.5;
-      }
-      .pass-player-badge {
-        display: inline-flex; align-items: center; gap: 6px;
-        background: var(--color-spy-dim);
-        border: 1px solid rgba(224,201,127,0.3);
-        border-radius: 24px;
-        padding: 6px 16px;
-        font-size: 15px; font-weight: 600;
-        color: var(--color-spy);
-        margin-top: 12px;
+        margin: 8px 0 0;
       }
 
       /* ── Анимация появления экранов ── */
@@ -389,7 +360,7 @@ const App = {
 
     Icons.insert('logo-icon', 'spy', { size: 80, strokeWidth: 1.5 });
     Icons.insert('about-logo', 'spy', { size: 56, strokeWidth: 1.5 });
-    Icons.insert('pass-icon', 'phone', { size: 32 });
+    Icons.insert('pass-icon', 'phone', { size: 56 });
     Icons.insert('cover-icon', 'handshake', { size: 48 });
     Icons.insert('rule-tip-icon', 'lightbulb', { size: 24 });
 
@@ -417,45 +388,19 @@ const App = {
       if (btn) btn.innerHTML = Icons.btnContent(icon, label);
     });
 
-    // Улучшаем экран передачи устройства
-    this.upgradePassScreen();
+    // Патчим тексты существующих элементов без перезаписи HTML
+    this.patchPassScreenTexts();
   },
 
-  // ── Заменяем старый pass-screen на улучшенный ──────────────────────────
-  upgradePassScreen() {
-    const passEl = document.getElementById('phase-pass');
-    if (!passEl) return;
+  // ── Патчим тексты экрана передачи, не трогая структуру HTML ────────────
+  patchPassScreenTexts() {
+    // Текст внутри cover-screen: «Передай телефон» → красивее
+    const coverText = document.querySelector('.cover-text');
+    if (coverText) coverText.textContent = 'Передайте устройство следующему участнику';
 
-    // Сохраняем ссылку на кнопку «Раскрыть роль», если она внутри phase-pass
-    const revealBtn = passEl.querySelector('#btn-reveal-role') ||
-                      document.getElementById('btn-reveal-role');
-
-    passEl.innerHTML = `
-      <div class="pass-device-visual" id="pass-icon-wrap">
-        ${SpySVG.small.replace('<svg ', '<svg width="32" height="32" ')}
-      </div>
-      <p class="pass-title" id="pass-main-title">Передайте устройство</p>
-      <p class="pass-subtitle">следующему участнику и нажмите «Показать роль»</p>
-      <div class="pass-player-badge" id="pass-player-label">
-        <span>👤</span>
-        <span id="role-player-num">Игрок №1</span>
-      </div>
-      <div id="role-progress-wrap" style="width:100%;margin-top:20px;">
-        <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--color-text-dim);margin-bottom:6px;">
-          <span>Прогресс</span>
-          <span id="role-progress-text">1 / 6</span>
-        </div>
-        <div style="height:4px;background:rgba(255,255,255,0.08);border-radius:4px;overflow:hidden;">
-          <div id="role-progress" style="height:100%;background:var(--color-spy);border-radius:4px;transition:width 0.4s;width:0%"></div>
-        </div>
-      </div>
-    `;
-
-    // Кнопку «Показать роль» переносим/оставляем снаружи phase-pass
-    if (revealBtn) {
-      // Уже существует как отдельный элемент — просто обновляем текст
-      revealBtn.textContent = 'Показать мою роль';
-    }
+    // Текст-подсказка в phase-pass
+    const passText = document.querySelector('.pass-text');
+    if (passText) passText.textContent = 'Передайте телефон следующему участнику и нажмите кнопку';
   },
 
   goToAbout() { this.showScreen('screen-about'); },
@@ -760,21 +705,23 @@ const App = {
     const total = roles.length;
     const role = roles[currentPlayer];
 
-    // Обновляем бейдж игрока
+    // #role-player-num — существует в HTML внутри #phase-pass
     const numEl = document.getElementById('role-player-num');
     if (numEl) numEl.textContent = role.name || `Игрок №${playerOrder[currentPlayer]}`;
 
-    // Обновляем заголовок в зависимости от номера
-    const titleEl = document.getElementById('pass-main-title');
-    if (titleEl) {
-      titleEl.textContent = currentPlayer === 0
-        ? 'Начинаем!' : 'Передайте устройство';
+    // Обновляем текст-подсказку в зависимости от номера игрока
+    const passText = document.querySelector('.pass-text');
+    if (passText) {
+      passText.textContent = currentPlayer === 0
+        ? 'Нажми кнопку, чтобы увидеть свою роль'
+        : 'Передайте телефон следующему участнику и нажмите кнопку';
     }
 
     document.getElementById('phase-pass').classList.remove('hidden');
     document.getElementById('phase-reveal').classList.add('hidden');
     document.getElementById('role-card').classList.remove('is-spy');
 
+    // role-progress — реальный ID из HTML (role-progress-fill внутри role-progress-bar)
     const progress = document.getElementById('role-progress');
     const progressText = document.getElementById('role-progress-text');
     if (progress) progress.style.width = `${((currentPlayer) / total) * 100}%`;
