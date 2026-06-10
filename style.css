@@ -684,24 +684,111 @@ html, body {
 .cover-screen {
   position: fixed;
   inset: 0;
-  background: var(--bg);
+  background: radial-gradient(ellipse at 50% 30%, #0d0820 0%, #000000 70%);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 20px;
+  gap: 32px;
   z-index: 100;
-  transition: opacity 0.3s;
+  animation: coverFadeIn 0.3s ease both;
+}
+
+@keyframes coverFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
 .cover-screen.hidden { display: none; }
 
 .cover-text {
   font-family: var(--font-head);
-  font-size: 24px;
-  font-weight: 600;
-  color: var(--text-muted);
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  text-align: center;
+  padding: 0 24px;
+  line-height: 1.25;
+  background: linear-gradient(135deg, #ffffff 0%, #a78bfa 50%, #60a5fa 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: none;
+  filter: drop-shadow(0 0 24px rgba(167, 139, 250, 0.5));
 }
+
+.cover-progress-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.cover-spinner {
+  position: relative;
+  width: 72px;
+  height: 72px;
+}
+
+.cover-spinner svg {
+  width: 100%;
+  height: 100%;
+  animation: spinnerRotate 1.4s linear infinite;
+}
+
+@keyframes spinnerRotate {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.cover-spinner-track {
+  fill: none;
+  stroke: rgba(255,255,255,0.08);
+  stroke-width: 5;
+}
+
+.cover-spinner-arc {
+  fill: none;
+  stroke: url(#spinnerGrad);
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-dasharray: 120 200;
+  filter: drop-shadow(0 0 6px rgba(96, 165, 250, 0.8));
+}
+
+.cover-percent {
+  font-family: var(--font-head);
+  font-size: 15px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.7);
+  letter-spacing: 1px;
+}
+
+.cover-label {
+  font-size: 13px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.35);
+  font-weight: 600;
+}
+
+.cover-icon {
+  display: none; /* заменён спиннером */
+}
+
+/* Уголки-декорации */
+.cover-corner {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  border-color: rgba(167, 139, 250, 0.3);
+  border-style: solid;
+}
+.cover-corner-tl { top: 20px; left: 20px; border-width: 2px 0 0 2px; border-radius: 4px 0 0 0; }
+.cover-corner-tr { top: 20px; right: 20px; border-width: 2px 2px 0 0; border-radius: 0 4px 0 0; }
+.cover-corner-bl { bottom: 20px; left: 20px; border-width: 0 0 2px 2px; border-radius: 0 0 0 4px; }
+.cover-corner-br { bottom: 20px; right: 20px; border-width: 0 2px 2px 0; border-radius: 0 0 4px 0; }
 
 .cover-icon {
   width: 72px;
