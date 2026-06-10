@@ -1,9 +1,49 @@
 /**
  * ШПИОН — script.js
- * Логика игры: настройки, роли, таймер, голосование, итоги
+ * Улучшенная версия: иконки, анимации, экран загрузки, TikTok-категория
  */
 'use strict';
 
+// ─── TikTok category (встроена прямо в скрипт) ───────────────────────────────
+const TIKTOK_CATEGORY = {
+  'TikTok': {
+    icon: 'tiktok',
+    words: [
+      { word: 'Skibidi Toilet', hint: 'Танцующая голова в унитазе' },
+      { word: 'Brawl Stars', hint: 'Мобильная игра от Supercell' },
+      { word: 'Roblox', hint: 'Платформа с миллионами мини-игр' },
+      { word: 'Minecraft', hint: 'Игра про кубики и выживание' },
+      { word: 'MrBeast', hint: 'Ютубер с огромными челленджами' },
+      { word: 'CapCut', hint: 'Популярное приложение для монтажа' },
+      { word: 'Sigma', hint: 'Интернет-мем про крутого одиночку' },
+      { word: 'Rizz', hint: 'Способность очаровывать людей' },
+      { word: 'NPC', hint: 'Персонаж, ведущий себя как робот' },
+      { word: 'Ohio', hint: 'Мем про «странный» штат США' },
+      { word: 'Giga Chad', hint: 'Идеальный альфа-мужчина из мема' },
+      { word: 'Fortnite', hint: 'Королевская битва с танцами' },
+      { word: 'Among Us', hint: 'Игра про предателя на корабле' },
+      { word: 'BLACKPINK', hint: 'К-поп-группа с миллиардами просмотров' },
+      { word: 'Charli D\'Amelio', hint: 'Самая популярная тиктокерша' },
+      { word: 'POV', hint: 'Формат видео от первого лица' },
+      { word: 'Duet', hint: 'Функция совместного видео в TikTok' },
+      { word: 'Хайп', hint: 'Бурное обсуждение чего-то популярного' },
+      { word: 'Trendsetter', hint: 'Тот, кто задаёт тренды' },
+      { word: 'Transition', hint: 'Плавный монтажный переход в видео' },
+      { word: 'Grimace Shake', hint: 'Мем с фиолетовым коктейлем McDonald\'s' },
+      { word: 'Subway Surfers', hint: 'Бегалка по крышам метро' },
+      { word: 'Only in Ohio', hint: 'Мем про невероятные события' },
+      { word: 'Slay', hint: 'Выглядеть или сделать что-то отлично' },
+      { word: 'Touch grass', hint: 'Совет выйти на улицу от интернета' },
+      { word: 'Rent free', hint: 'Мысль, которую нельзя выбросить из головы' },
+      { word: 'No cap', hint: 'Говорю серьёзно, без шуток' },
+      { word: 'Bussin\'', hint: 'Очень вкусно или очень круто' },
+      { word: 'Speedrun', hint: 'Пройти игру как можно быстрее' },
+      { word: 'Sheesh', hint: 'Возглас восхищения или удивления' }
+    ]
+  }
+};
+
+// ─── State ────────────────────────────────────────────────────────────────────
 const State = {
   settings: {
     players: 6,
@@ -33,8 +73,97 @@ const State = {
   session: { usedWords: [] }
 };
 
+// ─── SVG-иконки шпиона (встроенные) ──────────────────────────────────────────
+const SpySVG = {
+  // Классический агент в шляпе-федоре с тёмными очками
+  agent: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Голова -->
+    <ellipse cx="40" cy="38" rx="16" ry="18" stroke-width="2.5" fill="var(--spy-face,#1a1a2e)" stroke="var(--spy-stroke,#e0c97f)"/>
+    <!-- Шляпа-федора -->
+    <rect x="22" y="18" width="36" height="9" rx="2" stroke-width="2.5" fill="var(--spy-hat,#0d0d1a)" stroke="var(--spy-stroke,#e0c97f)"/>
+    <ellipse cx="40" cy="18" rx="22" ry="4" stroke-width="2.5" fill="var(--spy-hat,#0d0d1a)" stroke="var(--spy-stroke,#e0c97f)"/>
+    <!-- Очки -->
+    <rect x="26" y="35" width="11" height="7" rx="3" stroke-width="2" fill="var(--spy-glass,#0a0a0a)" stroke="var(--spy-stroke,#e0c97f)"/>
+    <rect x="43" y="35" width="11" height="7" rx="3" stroke-width="2" fill="var(--spy-glass,#0a0a0a)" stroke="var(--spy-stroke,#e0c97f)"/>
+    <line x1="37" y1="38.5" x2="43" y2="38.5" stroke-width="2" stroke="var(--spy-stroke,#e0c97f)"/>
+    <!-- Уши -->
+    <ellipse cx="24" cy="38" rx="3" ry="4" stroke-width="2" fill="var(--spy-face,#1a1a2e)" stroke="var(--spy-stroke,#e0c97f)"/>
+    <ellipse cx="56" cy="38" rx="3" ry="4" stroke-width="2" fill="var(--spy-face,#1a1a2e)" stroke="var(--spy-stroke,#e0c97f)"/>
+    <!-- Рот (ухмылка) -->
+    <path d="M34 50 Q40 55 46 50" stroke-width="2" stroke="var(--spy-stroke,#e0c97f)" fill="none"/>
+    <!-- Пиджак -->
+    <path d="M24 68 Q28 56 40 54 Q52 56 56 68" stroke-width="2.5" fill="var(--spy-suit,#0d0d1a)" stroke="var(--spy-stroke,#e0c97f)"/>
+    <path d="M40 54 L37 62 L40 60 L43 62 L40 54" stroke-width="1.5" fill="var(--spy-stroke,#e0c97f)" stroke="var(--spy-stroke,#e0c97f)"/>
+  </svg>`,
+
+  // Маленькая иконка для кнопок и чипов
+  small: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <ellipse cx="12" cy="10" rx="5" ry="5.5"/>
+    <rect x="6" y="4" width="12" height="3" rx="1"/>
+    <ellipse cx="12" cy="4" rx="7.5" ry="1.5"/>
+    <rect x="8.5" y="10" width="3" height="2.2" rx="1.1" fill="currentColor"/>
+    <rect x="12.5" y="10" width="3" height="2.2" rx="1.1" fill="currentColor"/>
+    <line x1="11.5" y1="11" x2="12.5" y2="11" stroke-width="1.5"/>
+    <path d="M7 20 Q9 16 12 15.5 Q15 16 17 20" fill="currentColor" stroke="none"/>
+  </svg>`
+};
+
+// ─── Экран загрузки ───────────────────────────────────────────────────────────
+const LoadingScreen = {
+  show(targetScreen, onComplete) {
+    let overlay = document.getElementById('loading-overlay');
+    if (!overlay) {
+      overlay = document.createElement('div');
+      overlay.id = 'loading-overlay';
+      overlay.innerHTML = `
+        <div class="loading-inner">
+          <div class="loading-spy-wrap">
+            <div class="loading-spy-anim">${SpySVG.agent}</div>
+            <div class="loading-radar">
+              <div class="radar-ring r1"></div>
+              <div class="radar-ring r2"></div>
+              <div class="radar-ring r3"></div>
+            </div>
+          </div>
+          <div class="loading-dots">
+            <span></span><span></span><span></span>
+          </div>
+          <p class="loading-label" id="loading-label">Подготовка миссии...</p>
+        </div>`;
+      document.body.appendChild(overlay);
+    }
+
+    const messages = [
+      'Перетасовываем роли…',
+      'Выбираем секретное слово…',
+      'Инструктируем агентов…',
+      'Миссия начинается!'
+    ];
+    let mi = 0;
+    const label = overlay.querySelector('#loading-label');
+    overlay.classList.remove('fade-out');
+    overlay.classList.add('visible');
+
+    const ticker = setInterval(() => {
+      mi++;
+      if (label && mi < messages.length) label.textContent = messages[mi];
+    }, 400);
+
+    setTimeout(() => {
+      clearInterval(ticker);
+      overlay.classList.add('fade-out');
+      setTimeout(() => {
+        overlay.classList.remove('visible', 'fade-out');
+        if (onComplete) onComplete();
+      }, 400);
+    }, 1800);
+  }
+};
+
+// ─── App ──────────────────────────────────────────────────────────────────────
 const App = {
   init() {
+    this.injectStyles();
     loadCustomCategories();
     this.initIcons();
     this.loadSettings();
@@ -49,6 +178,208 @@ const App = {
     this.showScreen('screen-menu');
   },
 
+  // ── Inject улучшенные стили ──────────────────────────────────────────────
+  injectStyles() {
+    if (document.getElementById('spy-enhanced-styles')) return;
+    const style = document.createElement('style');
+    style.id = 'spy-enhanced-styles';
+    style.textContent = `
+      /* ── Переменные ── */
+      :root {
+        --color-spy: #e0c97f;
+        --color-spy-dim: rgba(224,201,127,0.15);
+        --color-bg: #0d0d1a;
+        --color-surface: #13132a;
+        --color-surface2: #1a1a38;
+        --color-text: #f0f0ff;
+        --color-text-dim: rgba(240,240,255,0.55);
+        --radius-card: 20px;
+        --transition-screen: 0.38s cubic-bezier(0.4,0,0.2,1);
+      }
+
+      /* ── Переходы между экранами ── */
+      .screen { transition: opacity var(--transition-screen), transform var(--transition-screen); }
+      .screen:not(.active) { opacity: 0; transform: translateY(18px) scale(0.98); pointer-events: none; }
+      .screen.active { opacity: 1; transform: translateY(0) scale(1); }
+      .screen.exit { opacity: 0; transform: translateY(-18px) scale(0.98); }
+
+      /* ── Экран загрузки ── */
+      #loading-overlay {
+        position: fixed; inset: 0; z-index: 9999;
+        background: var(--color-bg);
+        display: flex; align-items: center; justify-content: center;
+        opacity: 0; pointer-events: none;
+        transition: opacity 0.4s;
+      }
+      #loading-overlay.visible { opacity: 1; pointer-events: all; }
+      #loading-overlay.fade-out { opacity: 0; }
+
+      .loading-inner {
+        display: flex; flex-direction: column; align-items: center; gap: 20px;
+      }
+      .loading-spy-wrap {
+        position: relative; width: 120px; height: 120px;
+        display: flex; align-items: center; justify-content: center;
+      }
+      .loading-spy-anim {
+        width: 80px; height: 80px;
+        color: var(--color-spy);
+        --spy-face: #1a1a2e; --spy-hat: #0d0d1a; --spy-glass: #0a0a0a;
+        --spy-suit: #0d0d1a; --spy-stroke: #e0c97f;
+        animation: spyFloat 2.4s ease-in-out infinite;
+        position: relative; z-index: 2;
+      }
+      @keyframes spyFloat {
+        0%,100% { transform: translateY(0); }
+        50% { transform: translateY(-8px); }
+      }
+      .loading-radar {
+        position: absolute; inset: 0;
+        display: flex; align-items: center; justify-content: center;
+      }
+      .radar-ring {
+        position: absolute; border-radius: 50%; border: 1.5px solid var(--color-spy);
+        opacity: 0; animation: radarPulse 2.4s ease-out infinite;
+      }
+      .radar-ring.r1 { width: 80px; height: 80px; animation-delay: 0s; }
+      .radar-ring.r2 { width: 100px; height: 100px; animation-delay: 0.6s; }
+      .radar-ring.r3 { width: 120px; height: 120px; animation-delay: 1.2s; }
+      @keyframes radarPulse {
+        0% { opacity: 0.9; transform: scale(0.6); }
+        100% { opacity: 0; transform: scale(1); }
+      }
+
+      .loading-dots { display: flex; gap: 8px; }
+      .loading-dots span {
+        width: 8px; height: 8px; border-radius: 50%;
+        background: var(--color-spy);
+        animation: dotBounce 1.2s ease-in-out infinite;
+      }
+      .loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+      .loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+      @keyframes dotBounce {
+        0%,80%,100% { transform: scale(0.6); opacity: 0.4; }
+        40% { transform: scale(1); opacity: 1; }
+      }
+      .loading-label {
+        font-size: 15px; color: var(--color-text-dim);
+        letter-spacing: 0.04em; text-align: center;
+        min-height: 1.4em;
+      }
+
+      /* ── Карточка роли — шпион ── */
+      #role-card.is-spy {
+        background: linear-gradient(145deg, #0d0d1a 0%, #1a0a2e 60%, #0d0d1a 100%);
+        border: 1.5px solid rgba(224,201,127,0.45);
+        box-shadow: 0 0 40px rgba(224,201,127,0.12), inset 0 0 20px rgba(224,201,127,0.04);
+        animation: cardRevealSpy 0.5s cubic-bezier(0.34,1.56,0.64,1) both;
+      }
+      #role-card:not(.is-spy) {
+        animation: cardReveal 0.45s cubic-bezier(0.34,1.56,0.64,1) both;
+      }
+      @keyframes cardRevealSpy {
+        from { transform: rotateY(90deg) scale(0.85); opacity: 0; }
+        to   { transform: rotateY(0deg)  scale(1);    opacity: 1; }
+      }
+      @keyframes cardReveal {
+        from { transform: scale(0.88) translateY(20px); opacity: 0; }
+        to   { transform: scale(1)    translateY(0);    opacity: 1; }
+      }
+
+      /* ── SVG агент на карточке шпиона ── */
+      .spy-agent-icon {
+        width: 80px; height: 80px;
+        color: var(--color-spy);
+        --spy-face: #1a1a2e; --spy-hat: #0d0d1a; --spy-glass: #0a0a0a;
+        --spy-suit: #0d0d1a; --spy-stroke: #e0c97f;
+        filter: drop-shadow(0 0 12px rgba(224,201,127,0.4));
+        animation: agentAppear 0.6s 0.1s cubic-bezier(0.34,1.56,0.64,1) both;
+      }
+      @keyframes agentAppear {
+        from { transform: scale(0) rotate(-15deg); opacity: 0; }
+        to   { transform: scale(1) rotate(0deg);   opacity: 1; }
+      }
+
+      /* ── Экран передачи устройства ── */
+      #phase-pass {
+        display: flex; flex-direction: column; align-items: center;
+        gap: 0; text-align: center;
+      }
+      .pass-device-visual {
+        width: 64px; height: 64px; margin: 0 auto 16px;
+        background: var(--color-spy-dim);
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        animation: passIconPulse 2s ease-in-out infinite;
+      }
+      @keyframes passIconPulse {
+        0%,100% { box-shadow: 0 0 0 0 var(--color-spy-dim); }
+        50% { box-shadow: 0 0 0 14px transparent; }
+      }
+      .pass-title {
+        font-size: 20px; font-weight: 700;
+        color: var(--color-text);
+        margin: 0 0 8px;
+        line-height: 1.3;
+      }
+      .pass-subtitle {
+        font-size: 14px; color: var(--color-text-dim);
+        margin: 0 0 4px;
+        line-height: 1.5;
+      }
+      .pass-player-badge {
+        display: inline-flex; align-items: center; gap: 6px;
+        background: var(--color-spy-dim);
+        border: 1px solid rgba(224,201,127,0.3);
+        border-radius: 24px;
+        padding: 6px 16px;
+        font-size: 15px; font-weight: 600;
+        color: var(--color-spy);
+        margin-top: 12px;
+      }
+
+      /* ── Анимация появления экранов ── */
+      .screen-game-enter .game-info-grid > * {
+        animation: slideInUp 0.4s both;
+      }
+      .screen-game-enter .game-info-grid > *:nth-child(1) { animation-delay: 0.05s; }
+      .screen-game-enter .game-info-grid > *:nth-child(2) { animation-delay: 0.1s; }
+      .screen-game-enter .game-info-grid > *:nth-child(3) { animation-delay: 0.15s; }
+      .screen-game-enter .game-info-grid > *:nth-child(4) { animation-delay: 0.2s; }
+      @keyframes slideInUp {
+        from { opacity: 0; transform: translateY(16px); }
+        to   { opacity: 1; transform: translateY(0); }
+      }
+
+      /* ── Новая кнопка «Раскрыть роль» с эффектом ── */
+      #btn-reveal-role {
+        position: relative; overflow: hidden;
+      }
+      #btn-reveal-role::after {
+        content: '';
+        position: absolute; inset: 0;
+        background: linear-gradient(120deg, transparent 30%, rgba(255,255,255,0.12) 50%, transparent 70%);
+        transform: translateX(-100%);
+        transition: transform 0.5s;
+      }
+      #btn-reveal-role:hover::after { transform: translateX(100%); }
+
+      /* ── Результат — плавное появление ── */
+      #screen-result.active .result-card {
+        animation: resultReveal 0.5s 0.1s cubic-bezier(0.34,1.56,0.64,1) both;
+      }
+      @keyframes resultReveal {
+        from { transform: scale(0.9) translateY(24px); opacity: 0; }
+        to   { transform: scale(1)   translateY(0);    opacity: 1; }
+      }
+
+      /* ── TikTok иконка (упрощённый логотип) ── */
+      .cat-chip-icon svg.tiktok-icon { color: #ff0050; }
+    `;
+    document.head.appendChild(style);
+  },
+
+  // ── Иконки ──────────────────────────────────────────────────────────────
   initIcons() {
     document.querySelectorAll('[data-icon]').forEach((el) => {
       const name = el.dataset.icon;
@@ -58,7 +389,7 @@ const App = {
 
     Icons.insert('logo-icon', 'spy', { size: 80, strokeWidth: 1.5 });
     Icons.insert('about-logo', 'spy', { size: 56, strokeWidth: 1.5 });
-    Icons.insert('pass-icon', 'phone', { size: 56 });
+    Icons.insert('pass-icon', 'phone', { size: 32 });
     Icons.insert('cover-icon', 'handshake', { size: 48 });
     Icons.insert('rule-tip-icon', 'lightbulb', { size: 24 });
 
@@ -85,6 +416,46 @@ const App = {
       const btn = document.getElementById(id);
       if (btn) btn.innerHTML = Icons.btnContent(icon, label);
     });
+
+    // Улучшаем экран передачи устройства
+    this.upgradePassScreen();
+  },
+
+  // ── Заменяем старый pass-screen на улучшенный ──────────────────────────
+  upgradePassScreen() {
+    const passEl = document.getElementById('phase-pass');
+    if (!passEl) return;
+
+    // Сохраняем ссылку на кнопку «Раскрыть роль», если она внутри phase-pass
+    const revealBtn = passEl.querySelector('#btn-reveal-role') ||
+                      document.getElementById('btn-reveal-role');
+
+    passEl.innerHTML = `
+      <div class="pass-device-visual" id="pass-icon-wrap">
+        ${SpySVG.small.replace('<svg ', '<svg width="32" height="32" ')}
+      </div>
+      <p class="pass-title" id="pass-main-title">Передайте устройство</p>
+      <p class="pass-subtitle">следующему участнику и нажмите «Показать роль»</p>
+      <div class="pass-player-badge" id="pass-player-label">
+        <span>👤</span>
+        <span id="role-player-num">Игрок №1</span>
+      </div>
+      <div id="role-progress-wrap" style="width:100%;margin-top:20px;">
+        <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--color-text-dim);margin-bottom:6px;">
+          <span>Прогресс</span>
+          <span id="role-progress-text">1 / 6</span>
+        </div>
+        <div style="height:4px;background:rgba(255,255,255,0.08);border-radius:4px;overflow:hidden;">
+          <div id="role-progress" style="height:100%;background:var(--color-spy);border-radius:4px;transition:width 0.4s;width:0%"></div>
+        </div>
+      </div>
+    `;
+
+    // Кнопку «Показать роль» переносим/оставляем снаружи phase-pass
+    if (revealBtn) {
+      // Уже существует как отдельный элемент — просто обновляем текст
+      revealBtn.textContent = 'Показать мою роль';
+    }
   },
 
   goToAbout() { this.showScreen('screen-about'); },
@@ -119,6 +490,10 @@ const App = {
       if (s.id === id) {
         s.classList.add('active');
         s.classList.remove('exit');
+        // Добавляем класс анимации при входе
+        void s.offsetWidth; // reflow
+        s.classList.add('screen-entered');
+        setTimeout(() => s.classList.remove('screen-entered'), 600);
       } else if (s.classList.contains('active')) {
         s.classList.add('exit');
         setTimeout(() => s.classList.remove('active', 'exit'), 400);
@@ -136,9 +511,15 @@ const App = {
     document.getElementById('btn-hide-role')?.addEventListener('click', () => this.hideRole());
   },
 
+  // ── Категории: добавляем TikTok ──────────────────────────────────────────
+  _getAllWithTikTok() {
+    const all = getAllCategories();
+    return Object.assign({}, all, TIKTOK_CATEGORY);
+  },
+
   renderCategories(filter = '') {
     const grid = document.getElementById('categories-grid');
-    const all = getAllCategories();
+    const all = this._getAllWithTikTok();
     const q = filter.trim().toLowerCase();
     grid.innerHTML = '';
 
@@ -148,7 +529,16 @@ const App = {
       const chip = document.createElement('button');
       chip.className = 'cat-chip' + (State.settings.categories.includes(name) ? ' selected' : '');
       const iconKey = data.icon || 'folder';
-      chip.innerHTML = `<span class="cat-chip-icon">${Icons.render(iconKey, { size: 18 })}</span><span class="cat-chip-text">${name}</span><span class="cat-chip-count">${count}</span>`;
+
+      // TikTok — специальная иконка (нотка + видео)
+      let iconHtml;
+      if (name === 'TikTok') {
+        iconHtml = `<span class="cat-chip-icon">${this._tiktokIconSVG(18)}</span>`;
+      } else {
+        iconHtml = `<span class="cat-chip-icon">${Icons.render(iconKey, { size: 18 })}</span>`;
+      }
+
+      chip.innerHTML = `${iconHtml}<span class="cat-chip-text">${name}</span><span class="cat-chip-count">${count}</span>`;
       chip.addEventListener('click', () => {
         const idx = State.settings.categories.indexOf(name);
         if (idx >= 0) {
@@ -166,6 +556,13 @@ const App = {
     this.updateCategorySummary();
   },
 
+  _tiktokIconSVG(size = 18) {
+    // Упрощённый TikTok-логотип (нота с двумя кружками)
+    return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="currentColor" style="color:#ff0050">
+      <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.24 8.24 0 004.81 1.52V6.75a4.85 4.85 0 01-1.04-.06z"/>
+    </svg>`;
+  },
+
   filterCategories(value) {
     this.renderCategories(value);
   },
@@ -173,14 +570,14 @@ const App = {
   updateCategorySummary() {
     const el = document.getElementById('categories-summary');
     if (!el) return;
-    const all = getAllCategories();
+    const all = this._getAllWithTikTok();
     let words = 0;
     State.settings.categories.forEach((c) => { words += all[c]?.words?.length || 0; });
     el.textContent = `${State.settings.categories.length} категорий · ${words} слов`;
   },
 
   selectAllCategories() {
-    State.settings.categories = Object.keys(getAllCategories());
+    State.settings.categories = Object.keys(this._getAllWithTikTok());
     this.renderCategories(document.getElementById('cat-search')?.value || '');
     this.saveSettings();
   },
@@ -224,7 +621,7 @@ const App = {
 
   migrateCategoryIcons() {
     const emojiToKey = { '⭐': 'star', '📁': 'folder' };
-    Object.values(getAllCategories()).forEach((cat) => {
+    Object.values(this._getAllWithTikTok()).forEach((cat) => {
       if (cat.icon && emojiToKey[cat.icon]) cat.icon = emojiToKey[cat.icon];
     });
   },
@@ -232,7 +629,7 @@ const App = {
   loadSettings() {
     this.migrateCategoryIcons();
     const saved = localStorage.getItem('spy_settings');
-    const all = getAllCategories();
+    const all = this._getAllWithTikTok();
     if (saved) {
       try {
         const s = JSON.parse(saved);
@@ -289,7 +686,7 @@ const App = {
   },
 
   pickWord(categories) {
-    const all = getAllCategories();
+    const all = this._getAllWithTikTok();
     const pool = [];
     categories.forEach((cat) => {
       if (all[cat]?.words) {
@@ -310,6 +707,7 @@ const App = {
     return available[Math.floor(Math.random() * available.length)];
   },
 
+  // ── Запуск с экраном загрузки ─────────────────────────────────────────────
   startGame() {
     this.saveSettings();
     const { players, spies, categories } = State.settings;
@@ -320,6 +718,15 @@ const App = {
     const picked = this.pickWord(categories);
     if (!picked) { this.toast('Нет слов в выбранных категориях!'); return; }
 
+    // Показываем экран загрузки, пока готовим игру
+    LoadingScreen.show('screen-role', () => {
+      this._initGameState(picked, players, spies);
+      this.showScreen('screen-role');
+      this.showPassPhase();
+    });
+  },
+
+  _initGameState(picked, players, spies) {
     State.game.word = picked.word;
     State.game.spyHint = picked.hint;
     State.game.category = picked.category;
@@ -346,9 +753,6 @@ const App = {
     State.stats.wordsPlayed++;
     State.stats.totalPlayers += players;
     this.saveStats();
-
-    this.showScreen('screen-role');
-    this.showPassPhase();
   },
 
   showPassPhase() {
@@ -356,8 +760,17 @@ const App = {
     const total = roles.length;
     const role = roles[currentPlayer];
 
-    document.getElementById('role-player-num').textContent =
-      role.name || `Игрок №${playerOrder[currentPlayer]}`;
+    // Обновляем бейдж игрока
+    const numEl = document.getElementById('role-player-num');
+    if (numEl) numEl.textContent = role.name || `Игрок №${playerOrder[currentPlayer]}`;
+
+    // Обновляем заголовок в зависимости от номера
+    const titleEl = document.getElementById('pass-main-title');
+    if (titleEl) {
+      titleEl.textContent = currentPlayer === 0
+        ? 'Начинаем!' : 'Передайте устройство';
+    }
+
     document.getElementById('phase-pass').classList.remove('hidden');
     document.getElementById('phase-reveal').classList.add('hidden');
     document.getElementById('role-card').classList.remove('is-spy');
@@ -383,23 +796,27 @@ const App = {
 
     const card = document.getElementById('role-card');
     const hideBtn = document.getElementById('btn-hide-role');
-
     const badge = document.getElementById('role-badge');
+
     if (role.isSpy) {
       card.classList.add('is-spy');
-      badge.innerHTML = Icons.render('spy', { size: 72, strokeWidth: 1.5 });
+      // Показываем красивую иконку агента вместо символа
+      badge.innerHTML = `<div class="spy-agent-icon">${SpySVG.agent}</div>`;
+
       if (State.settings.hints && State.game.spyHint) {
         document.getElementById('role-word').textContent = State.game.spyHint;
         document.getElementById('role-desc').textContent = 'Подсказка — ты в теме, но слово другое';
       } else {
-        document.getElementById('role-word').textContent = 'Вы шпион';
+        document.getElementById('role-word').textContent = 'Вы — шпион 🕵️';
         document.getElementById('role-desc').textContent = 'Слушай, наблюдай, не выдавай себя!';
       }
+      this.haptic('heavy');
     } else {
       card.classList.remove('is-spy');
       badge.innerHTML = Icons.render('person', { size: 72, strokeWidth: 1.5 });
       document.getElementById('role-word').textContent = State.game.word;
       document.getElementById('role-desc').textContent = 'Это твоё слово. Никому не говори!';
+      this.haptic('light');
     }
 
     if (hideBtn) hideBtn.style.display = State.settings.autoHide ? 'inline-flex' : 'none';
@@ -431,14 +848,18 @@ const App = {
 
   goToGameScreen() {
     const { players, spies, timer } = State.settings;
-    const all = getAllCategories();
+    const all = this._getAllWithTikTok();
     const catData = all[State.game.category];
 
     document.getElementById('game-players-count').textContent = players;
     document.getElementById('game-spies-count').textContent = spies;
     const catEl = document.getElementById('game-category');
     const iconKey = catData?.icon || 'folder';
-    catEl.innerHTML = `${Icons.render(iconKey, { size: 16 })}<span>${State.game.category}</span>`;
+    const isTikTok = State.game.category === 'TikTok';
+    catEl.innerHTML = isTikTok
+      ? `${this._tiktokIconSVG(16)}<span>${State.game.category}</span>`
+      : `${Icons.render(iconKey, { size: 16 })}<span>${State.game.category}</span>`;
+
     document.getElementById('game-first-player').textContent =
       `Игрок №${State.game.firstPlayer} начинает`;
     document.getElementById('revealed-word').textContent = State.game.word;
@@ -490,12 +911,15 @@ const App = {
   },
 
   showResultScreen() {
-    const all = getAllCategories();
+    const all = this._getAllWithTikTok();
     const cat = all[State.game.category];
     document.getElementById('result-word').textContent = State.game.word;
     const resultCat = document.getElementById('result-category');
     const catIcon = cat?.icon || 'folder';
-    resultCat.innerHTML = `${Icons.render(catIcon, { size: 14 })}<span>${State.game.category}</span>`;
+    const isTikTok = State.game.category === 'TikTok';
+    resultCat.innerHTML = isTikTok
+      ? `${this._tiktokIconSVG(14)}<span>${State.game.category}</span>`
+      : `${Icons.render(catIcon, { size: 14 })}<span>${State.game.category}</span>`;
     document.getElementById('result-spies').textContent =
       State.game.spyPlayers.map((n) => `№${n}`).join(', ');
 
